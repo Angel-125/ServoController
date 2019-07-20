@@ -90,7 +90,7 @@ namespace ServoController
         const string ROTATE_COUNTERCLOCKWISE = "rotateCounterClockwise";
         const string PISTON_DAMPING = "pistonDamping";
         const string TARGET_EXTENSION = "targetExtension";
-        const int kPanelHeight = 150;
+        const int kPanelHeight = 190;
 
         public const string START_ANIMATION = "Animation Start";
         public const string END_ANIMATION = "Animation End";
@@ -269,11 +269,11 @@ namespace ServoController
             {
                 int panelHeight = 240;
 
-                panelOptions = new GUILayoutOption[] { GUILayout.Height(panelHeight) };
                 return panelHeight;
             }
             else
             {
+                panelOptions = new GUILayoutOption[] { GUILayout.Height(kPanelHeight) };
                 return kPanelHeight;
             }
         }
@@ -443,7 +443,7 @@ namespace ServoController
             drawResourceConsumption(rotorServo);
 
             //RPM
-            GUILayout.Label(string.Format("<color=white><b>Current RPM: </b>{0:f2}</color>", rotorServo.currentRPM)); ;
+//            GUILayout.Label(string.Format("<color=white><b>Current RPM: </b>{0:f2}</color>", rotorServo.currentRPM)); ;
             GUILayout.BeginHorizontal();
             GUILayout.Label(string.Format("<color=white><b>RPM Limit: </b>{0:f2}</color>", rotorServo.rpmLimit)); ;
 

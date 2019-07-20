@@ -14,3 +14,15 @@ C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\TDx.TDxInput.dll
 C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.dll
 C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.pdb
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\ServoController.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\ServoController.pdb
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\KSPTrackIR.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\KSPAssets.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\Mono.Cecil.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\Ionic.Zip.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\TDx.TDxInput.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csprojAssemblyReference.cache
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csproj.CoreCompileInputs.cache
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csproj.CopyComplete
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.pdb
