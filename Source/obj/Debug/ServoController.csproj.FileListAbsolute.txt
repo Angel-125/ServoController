@@ -1,0 +1,16 @@
+C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.csprojAssemblyReference.cache
+C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.csproj.CoreCompileInputs.cache
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\ServoController.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\ServoController.pdb
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\Assembly-CSharp-firstpass.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\Assembly-CSharp.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\UnityEngine.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\UnityEngine.UI.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\KSPTrackIR.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\KSPAssets.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\Mono.Cecil.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\Ionic.Zip.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\bin\Debug\TDx.TDxInput.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.csproj.CopyComplete
+C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.dll
+C:\Projects\KSP\WildBlueIndustries\ServoController\obj\Debug\ServoController.pdb

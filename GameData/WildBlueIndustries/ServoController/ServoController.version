@@ -1,0 +1,18 @@
+{
+    "NAME":"Kerbal Actuators: Servo Controller",
+    "URL":"https://raw.githubusercontent.com/Angel-125/ServoController/master/ServoController/GameData/WildBlueIndustries/ServoController/ServoController.version",
+    "DOWNLOAD":"https://github.com/Angel-125/ServoController/releases",
+    "GITHUB":
+    {
+        "USERNAME":"Angel-125",
+        "REPOSITORY":"ServoController",
+        "ALLOW_PRE_RELEASE":false,
+    },
+    "VERSION":
+    {
+	"MAJOR":1,
+	"MINOR":0,
+	"PATCH":0,
+	"BUILD":0
+    }
+}
