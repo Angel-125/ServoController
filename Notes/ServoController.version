@@ -1,0 +1,25 @@
+{
+  "NAME": "Snacks",
+  "URL": "https://raw.githubusercontent.com/Angel-125/ServoController/Notes/ServoController.version",
+  "DOWNLOAD": "https://github.com/Angel-125/Snacks/releases",
+  "GITHUB": {
+    "USERNAME": "Angel-125",
+    "REPOSITORY": "Servo Controller",
+    "ALLOW_PRE_RELEASE": false
+  },
+  "VERSION": {
+    "MAJOR": 1,
+    "MINOR": 0,
+    "PATCH": 0
+  },
+  "KSP_VERSION": {
+    "MAJOR": 1,
+    "MINOR": 7,
+    "PATCH": 3
+  },
+  "KSP_VERSION_MIN": {
+    "MAJOR": 1,
+    "MINOR": 7,
+    "PATCH": 0
+  }
+}
