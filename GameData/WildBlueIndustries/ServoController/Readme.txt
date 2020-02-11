@@ -8,8 +8,11 @@ Copy the contents of the mod's GameData directory into your GameData folder.
 
 ---REVISION HISORY---
 
+1.1.1
+- Compatibility update
+
 1.1
-- Updated for KSP 1.8
+- Updated to KSP 1.8
 
 1.0 Initial release
 
