@@ -62,6 +62,7 @@ namespace ServoController
             managerWindow.LockServos = LockServos;
             managerWindow.UnlockServos = UnlockServos;
             managerWindow.DrawServoControls = DrawServoControls;
+            managerWindow.ReturnHome = ReturnHome;
         }
 
         public override void OnLoad(ConfigNode node)
@@ -85,9 +86,12 @@ namespace ServoController
         {
             base.OnSave(node);
 
-            int count = snapshotNodes.Count;
-            for (int index = 0; index < count; index++)
-                node.AddNode(snapshotNodes[index]);
+            if (snapshotNodes != null)
+            {
+                int count = snapshotNodes.Count;
+                for (int index = 0; index < count; index++)
+                    node.AddNode(snapshotNodes[index]);
+            }
         }
         #endregion
 
@@ -180,6 +184,12 @@ namespace ServoController
                 controllers[index].SetServoLock(false);
 
             ScreenMessages.PostScreenMessage(SERVOS_UNLOCKED_MESSAGE, 5.0f, ScreenMessageStyle.UPPER_CENTER);
+        }
+
+        protected void ReturnHome()
+        {
+            for (int index = 0; index < controllers.Length; index++)
+                controllers[index].ReturnHome();
         }
 
         protected void DrawServoControls()

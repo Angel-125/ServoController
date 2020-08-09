@@ -128,6 +128,7 @@ namespace ServoController
         string unitsText = "15";
         bool inverted;
         bool counterClockwiseDirection;
+        bool isPlayingSnapshot = false;
         #endregion
 
         #region Overrides
@@ -189,6 +190,42 @@ namespace ServoController
                     break;
             }
         }
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+            if (!isPlayingSnapshot)
+                return;
+
+            BaseServo servo = null;
+            switch (servoType)
+            {
+                case BGServoTypes.hinge:
+                    if (Mathf.Abs(hingeServo.currentAngle) / Mathf.Abs(hingeServo.targetAngle) <= 0.01f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = !hingeServo.servoIsLocked;
+                    break;
+
+                case BGServoTypes.piston:
+                    if (Mathf.Abs(pistonServo.currentExtension) / Mathf.Abs(pistonServo.targetExtension) <= 0.01f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = !pistonServo.servoIsLocked;
+                    break;
+
+                case BGServoTypes.rotor:
+                    servo = rotorServo;
+                    break;
+
+                case BGServoTypes.servo:
+                    if (Mathf.Abs(rotationServo.currentAngle) / Mathf.Abs(rotationServo.targetAngle) <= 0.01f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = !rotationServo.servoIsLocked;
+                    break;
+            }
+        }
+
         #endregion
 
         #region KSP Events and Actions
@@ -220,6 +257,9 @@ namespace ServoController
                 if (node.values.Count == 0)
                     return;
 
+                isPlayingSnapshot = true;
+                SetServoLock(false);
+
                 switch (servoType)
                 {
                     case BGServoTypes.hinge:
@@ -243,22 +283,51 @@ namespace ServoController
 
         public void SetServoLock(bool isLocked)
         {
+            BaseServo servo = null;
             switch (servoType)
             {
                 case BGServoTypes.hinge:
-                    hingeServo.servoIsLocked = isLocked;
+                    servo = hingeServo;
                     break;
 
                 case BGServoTypes.piston:
-                    pistonServo.servoIsLocked = isLocked;
+                    servo = pistonServo;
                     break;
 
                 case BGServoTypes.rotor:
-                    rotorServo.servoIsLocked = isLocked;
+                    servo = rotorServo;
                     break;
 
                 case BGServoTypes.servo:
-                    rotationServo.servoIsLocked = isLocked;
+                    servo = rotationServo;
+                    break;
+            }
+
+            if (isLocked && !servo.servoIsLocked)
+                servo.EngageServoLock();
+            else if (!isLocked && servo.servoIsLocked)
+                servo.DisengageServoLock();
+        }
+
+        public void ReturnHome()
+        {
+            BaseServo servo = null;
+            switch (servoType)
+            {
+                case BGServoTypes.hinge:
+                    servo = hingeServo;
+                    break;
+
+                case BGServoTypes.piston:
+                    servo = pistonServo;
+                    break;
+
+                case BGServoTypes.rotor:
+                    servo = rotorServo;
+                    break;
+
+                case BGServoTypes.servo:
+                    servo = rotationServo;
                     break;
             }
         }
@@ -346,6 +415,7 @@ namespace ServoController
 
             float value;
             float currentExtension = pistonServo.currentExtension;
+            bool lockServo = true;
             GUILayout.Label(string.Format("<color=white><b>Current Extension: </b>{0:f2}</color>", currentExtension));
 
             //Rotation speed
@@ -372,6 +442,7 @@ namespace ServoController
             //Minimum rotation
             if (GUILayout.Button(WBIServoGUI.minIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
                 pistonServo.Fields["targetExtension"].SetValue(softMinMaxExtension.x, pistonServo);
                 pistonServo.currentExtension = softMinMaxExtension.x;
             }
@@ -379,6 +450,8 @@ namespace ServoController
             ///Retract
             if (GUILayout.RepeatButton(WBIServoGUI.backIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
+                SetServoLock(false);
                 currentExtension -= velocity * TimeWarp.fixedDeltaTime;
                 if (currentExtension < softMinMaxExtension.x)
                     currentExtension = softMinMaxExtension.x;
@@ -390,6 +463,8 @@ namespace ServoController
             //Extend
             if (GUILayout.RepeatButton(WBIServoGUI.forwardIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
+                SetServoLock(false);
                 currentExtension += velocity * TimeWarp.fixedDeltaTime;
                 if (currentExtension > softMinMaxExtension.y)
                     currentExtension = softMinMaxExtension.y;
@@ -401,6 +476,8 @@ namespace ServoController
             //Max rotation
             if (GUILayout.Button(WBIServoGUI.maxIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
+                SetServoLock(false);
                 pistonServo.Fields["targetExtension"].SetValue(softMinMaxExtension.y, pistonServo);
                 pistonServo.currentExtension = softMinMaxExtension.y;
             }
@@ -428,9 +505,14 @@ namespace ServoController
 
             if (GUILayout.Button("Set"))
             {
+                lockServo = false;
+                SetServoLock(false);
                 pistonServo.Fields["targetExtension"].SetValue(softMinMaxExtension.y, pistonServo);
                 pistonServo.currentExtension = softMinMaxExtension.y;
             }
+
+            if (lockServo)
+                SetServoLock(true);
 
             GUILayout.EndHorizontal();
         }
@@ -509,6 +591,7 @@ namespace ServoController
         {
             float setAngle;
             float currentAngle = 0;
+            bool lockServo = true;
             if (hingeServo != null)
             {
                 drawResourceConsumption(hingeServo);
@@ -559,6 +642,7 @@ namespace ServoController
             //Minimum rotation
             if (GUILayout.Button(WBIServoGUI.minIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
                 if (hingeServo != null)
                     hingeServo.SetMinimumAngle();
                 else if (rotationServo != null)
@@ -574,11 +658,15 @@ namespace ServoController
 
                 if (hingeServo != null)
                 {
+                    SetServoLock(false);
+                    lockServo = false;
                     hingeServo.Fields["targetAngle"].SetValue(currentAngle, hingeServo);
                     hingeServo.currentAngle = currentAngle;
                 }
                 else if (rotationServo != null)
                 {
+                    SetServoLock(false);
+                    lockServo = false;
                     rotationServo.Fields["targetAngle"].SetValue(currentAngle, rotationServo);
                     rotationServo.currentAngle = currentAngle;
                 }
@@ -593,11 +681,15 @@ namespace ServoController
 
                 if (hingeServo != null)
                 {
+                    SetServoLock(false);
+                    lockServo = false;
                     hingeServo.Fields["targetAngle"].SetValue(currentAngle, hingeServo);
                     hingeServo.currentAngle = currentAngle;
                 }
                 else if (rotationServo != null)
                 {
+                    SetServoLock(false);
+                    lockServo = false;
                     rotationServo.Fields["targetAngle"].SetValue(currentAngle, rotationServo);
                     rotationServo.currentAngle = currentAngle;
                 }
@@ -606,6 +698,7 @@ namespace ServoController
             //Max rotation
             if (GUILayout.Button(WBIServoGUI.maxIcon, WBIServoGUI.buttonOptions))
             {
+                lockServo = false;
                 if (hingeServo != null)
                     hingeServo.SetMaximumAngle();
                 else if (rotationServo != null)
@@ -637,15 +730,20 @@ namespace ServoController
             {
                 if (hingeServo != null)
                 {
+                    lockServo = false;
                     hingeServo.Fields["targetAngle"].SetValue(setAngle, hingeServo);
                     hingeServo.currentAngle = setAngle;
                 }
                 else if (rotationServo != null)
                 {
+                    lockServo = false;
                     rotationServo.Fields["targetAngle"].SetValue(setAngle, rotationServo);
                     rotationServo.currentAngle = setAngle;
                 }
             }
+
+            if (lockServo)
+                SetServoLock(true);
 
             GUILayout.EndHorizontal();
         }

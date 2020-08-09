@@ -34,6 +34,7 @@ namespace ServoController
     public delegate void LockServosDelegate();
     public delegate void UnlockServosDelegate();
     public delegate void DrawServoControlsDelegate();
+    public delegate void ReturnHomeDelegate();
     #endregion
 
     public class WBIServoGUI : Window<WBIServoGUI>
@@ -51,6 +52,7 @@ namespace ServoController
         public static Texture saveIcon = null;
         public static Texture lockIcon = null;
         public static Texture unlockIcon = null;
+        public static Texture homeIcon = null;
         public static GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Width(32), GUILayout.Height(32) };
         #endregion
 
@@ -76,6 +78,7 @@ namespace ServoController
         public LockServosDelegate LockServos;
         public UnlockServosDelegate UnlockServos;
         public DrawServoControlsDelegate DrawServoControls;
+        public ReturnHomeDelegate ReturnHome;
         #endregion
 
         #region Constructors
@@ -111,6 +114,7 @@ namespace ServoController
                 backIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Backward", false);
                 lockIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Lock", false);
                 unlockIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Unlock", false);
+                homeIcon = GameDatabase.Instance.GetTexture(baseIconURL + "House", false);
             }
 
             if (newValue)
@@ -165,6 +169,10 @@ namespace ServoController
             //Unlock servos
             if (GUILayout.Button(unlockIcon, buttonOptions))
                 UnlockServos();
+
+            //Go to launch position
+//            if (GUILayout.Button(homeIcon, buttonOptions))
+//                ReturnHome();
 
             GUILayout.EndHorizontal();
 

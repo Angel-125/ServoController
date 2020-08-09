@@ -8,6 +8,9 @@ Copy the contents of the mod's GameData directory into your GameData folder.
 
 ---REVISION HISORY---
 
+1.1.2
+- Joints will be automatically locked if they're not moving and you have the Snapshot Manager window opened.
+
 1.1.1
 - Compatibility update
 
