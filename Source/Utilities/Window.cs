@@ -85,13 +85,29 @@ namespace ServoController
             this.visible = newValue;
 
             if (this.visible)
-                WBIServoControllerGUIMgr.Instance.RegisterWindow(this);
-            else
-                WBIServoControllerGUIMgr.Instance.UnregisterWindow(this);
-
-            if (!newValue)
             {
-                InputLockManager.SetControlLock(ControlTypes.None, "WindowLock" + this.windowId);
+                WBIServoControllerGUIMgr.Instance.RegisterWindow(this);
+                if (HighLogic.LoadedSceneIsEditor)
+                {
+                    EditorLogic.fetch.Lock(true, true, true, "WindowLock" + this.windowId);
+                    InputLockManager.SetControlLock(ControlTypes.EDITOR_ICON_HOVER |
+                        ControlTypes.EDITOR_ICON_PICK |
+                        ControlTypes.EDITOR_TAB_SWITCH |
+                        ControlTypes.EDITOR_PAD_PICK_PLACE |
+                        ControlTypes.EDITOR_PAD_PICK_COPY |
+                        ControlTypes.EDITOR_GIZMO_TOOLS |
+                        ControlTypes.EDITOR_ROOT_REFLOW |
+                        ControlTypes.EDITOR_SYM_SNAP_UI |
+                        ControlTypes.EDITOR_UNDO_REDO, "EditorLock" + this.windowId);
+                }
+            }
+            else
+            {
+                WBIServoControllerGUIMgr.Instance.UnregisterWindow(this);
+                if (InputLockManager.GetControlLock("WindowLock" + this.windowId) != ControlTypes.None)
+                    InputLockManager.RemoveControlLock("WindowLock" + this.windowId);
+                if (InputLockManager.GetControlLock("EditorLock" + this.windowId) != ControlTypes.None)
+                    InputLockManager.RemoveControlLock("EditorLock" + this.windowId);
             }
         }
 
@@ -177,17 +193,14 @@ namespace ServoController
                         GUILayout.ExpandHeight(true), GUILayout.MinWidth(64), GUILayout.MinHeight(64));
                 }
 
-                if (!HighLogic.LoadedSceneIsFlight)
+                Vector3 mousePosition = Input.mousePosition;
+                if (windowPos.Contains(mousePosition))
                 {
-                    Vector3 mousePosition = Input.mousePosition;
-                    if (windowPos.Contains(mousePosition))
-                    {
-                        InputLockManager.SetControlLock(ControlTypes.All, "WindowLock" + this.windowId);
-                    }
-                    else
-                    {
-                        InputLockManager.SetControlLock(ControlTypes.None, "WindowLock" + this.windowId);
-                    }
+                    InputLockManager.SetControlLock(ControlTypes.ALLBUTCAMERAS, "WindowLock" + this.windowId);
+                }
+                else
+                {
+                    InputLockManager.RemoveControlLock("WindowLock" + this.windowId);
                 }
             }
         }

@@ -33,6 +33,8 @@ namespace ServoController
         #endregion
 
         #region Fields
+        [KSPField(isPersistant = true)]
+        public bool autoLock = true;
         #endregion
 
         #region Housekeeping
@@ -41,6 +43,7 @@ namespace ServoController
         WBIServoGUI managerWindow;
         List<ConfigNode> snapshotNodes;
         WBIBGSnapshotController[] controllers;
+        bool uiWasHidden = false;
         #endregion
 
         #region Overrides
@@ -53,6 +56,7 @@ namespace ServoController
             if (snapshotNodes == null)
                 snapshotNodes = new List<ConfigNode>();
 
+            controllers = findControllers();
             managerWindow = new WBIServoGUI();
             managerWindow.roboticController = roboticController;
             managerWindow.PlaySnapshot = PlaySnapshot;
@@ -63,6 +67,9 @@ namespace ServoController
             managerWindow.UnlockServos = UnlockServos;
             managerWindow.DrawServoControls = DrawServoControls;
             managerWindow.ReturnHome = ReturnHome;
+
+            GameEvents.onHideUI.Add(onHideUI);
+            GameEvents.onShowUI.Add(onShowUI);
         }
 
         public override void OnLoad(ConfigNode node)
@@ -93,6 +100,13 @@ namespace ServoController
                     node.AddNode(snapshotNodes[index]);
             }
         }
+
+        public void OnDestroy()
+        {
+            GameEvents.onHideUI.Remove(onHideUI);
+            GameEvents.onShowUI.Remove(onShowUI);
+        }
+
         #endregion
 
         #region KSP PAW Events
@@ -112,12 +126,21 @@ namespace ServoController
                 managerWindow.panelHeight = panelHeight;
                 managerWindow.WindowTitle = roboticController.displayName;
                 managerWindow.snapshots = snapshotNodes;
+                managerWindow.servoManager = this;
                 managerWindow.SetVisible(true);
             }
         }
         #endregion
 
         #region API
+        public void SetAutolock(bool autoLockOn)
+        {
+            autoLock = autoLockOn;
+
+            for (int index = 0; index < controllers.Length; index++)
+                controllers[index].SetAutolock(autoLock);
+        }
+
         protected int AddSnapshot()
         {
             if (snapshotNodes.Count == 0)
@@ -200,6 +223,24 @@ namespace ServoController
         #endregion
 
         #region Heleprs
+        protected void onHideUI()
+        {
+            if (!uiWasHidden && managerWindow.IsVisible())
+            {
+                uiWasHidden = true;
+                managerWindow.SetVisible(false);
+            }
+        }
+
+        protected void onShowUI()
+        {
+            if (uiWasHidden && !managerWindow.IsVisible())
+            {
+                uiWasHidden = false;
+                OpenSnapshotManager();
+            }
+        }
+
         protected WBIBGSnapshotController[] findControllers()
         {
             List<WBIBGSnapshotController> assignedControllers = new List<WBIBGSnapshotController>();

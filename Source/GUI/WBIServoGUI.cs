@@ -53,6 +53,12 @@ namespace ServoController
         public static Texture lockIcon = null;
         public static Texture unlockIcon = null;
         public static Texture homeIcon = null;
+        public static Texture clockwiseIcon = null;
+        public static Texture counterClockwiseIcon = null;
+        public static Texture powerOnIcon = null;
+        public static Texture powerOffIcon = null;
+        public static Texture lightOnIcon = null;
+        public static Texture lightOffIcon = null;
         public static GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Width(32), GUILayout.Height(32) };
         #endregion
 
@@ -63,6 +69,7 @@ namespace ServoController
         public List<ConfigNode> snapshots = new List<ConfigNode>();
         public List<string> snapshotNames = new List<string>();
         public int panelHeight;
+        public bool autoLock = true;
 
         Vector2 scrollPos;
         Vector2 playbookScrollPos;
@@ -115,6 +122,12 @@ namespace ServoController
                 lockIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Lock", false);
                 unlockIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Unlock", false);
                 homeIcon = GameDatabase.Instance.GetTexture(baseIconURL + "House", false);
+                clockwiseIcon = GameDatabase.Instance.GetTexture(baseIconURL + "Clockwise", false);
+                counterClockwiseIcon = GameDatabase.Instance.GetTexture(baseIconURL + "CounterClockwise", false);
+                powerOnIcon = GameDatabase.Instance.GetTexture(baseIconURL + "PowerOn", false);
+                powerOffIcon = GameDatabase.Instance.GetTexture(baseIconURL + "PowerOff", false);
+                lightOnIcon = GameDatabase.Instance.GetTexture(baseIconURL + "LightOn", false);
+                lightOffIcon = GameDatabase.Instance.GetTexture(baseIconURL + "LightOff", false);
             }
 
             if (newValue)
@@ -125,7 +138,12 @@ namespace ServoController
                 for (int index = 0; index < count; index++)
                     snapshotNames.Add(snapshots[index].GetValue(WBIBGSnapshotManager.NAME_FIELD));
             }
+            else
+            {
+                servoManager = null;
+            }
         }
+
         protected override void DrawWindowContents(int windowId)
         {
             GUILayout.BeginVertical();
@@ -171,10 +189,15 @@ namespace ServoController
                 UnlockServos();
 
             //Go to launch position
-//            if (GUILayout.Button(homeIcon, buttonOptions))
-//                ReturnHome();
+            //            if (GUILayout.Button(homeIcon, buttonOptions))
+            //                ReturnHome();
 
             GUILayout.EndHorizontal();
+
+            //Auto-lock
+            autoLock = GUILayout.Toggle(autoLock, "Auto-lock");
+            if (autoLock != servoManager.autoLock)
+                servoManager.SetAutolock(autoLock);
 
             //list of recorded snapshots
             playbookScrollPos = GUILayout.BeginScrollView(playbookScrollPos);

@@ -8,6 +8,14 @@ Copy the contents of the mod's GameData directory into your GameData folder.
 
 ---REVISION HISORY---
 
+1.2.0
+- Added sound effects for when you control the servos.
+- Added part highlighter to help you determine which GUI controls which servo.
+
+1.1.3
+- Joints auto-unlock when you run snapshots.
+- Joints have a lock/unlock indicator.
+
 1.1.2
 - Joints will be automatically locked if they're not moving and you have the Snapshot Manager window opened.
 

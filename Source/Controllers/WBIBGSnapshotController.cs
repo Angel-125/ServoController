@@ -6,6 +6,7 @@ using UnityEngine;
 using KSP.IO;
 using System.Text.RegularExpressions;
 using Expansions.Serenity;
+using Highlighting;
 
 /*
 Source code copyright 2018, by Michael Billard (Angel-125)
@@ -98,8 +99,6 @@ namespace ServoController
         #endregion
 
         #region Housekeeping
-        static Texture powerOnIcon = null;
-        static Texture powerOffIcon = null;
         #endregion
 
         #region Fields
@@ -108,12 +107,20 @@ namespace ServoController
         /// </summary>
         [KSPField]
         public string type;
+
+        [KSPField(isPersistant = true)]
+        public bool autoLock = true;
+
+        [KSPField]
+        public string servoEffectName = string.Empty;
         #endregion
 
         #region Housekeeping
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Servo ID")]
         public string partNickName = string.Empty;
 
         BGServoTypes servoType;
+        BaseServo servo = null;
         ModuleRoboticServoHinge hingeServo;
         ModuleRoboticServoPiston pistonServo;
         ModuleRoboticServoRotor rotorServo;
@@ -125,10 +132,12 @@ namespace ServoController
 
         Vector2 scrollVector = new Vector2();
         GUILayoutOption[] panelOptions = new GUILayoutOption[] { GUILayout.Height(kPanelHeight) };
+        public static GUILayoutOption[] iconOptions = new GUILayoutOption[] { GUILayout.Width(24), GUILayout.Height(24) };
         string unitsText = "15";
         bool inverted;
         bool counterClockwiseDirection;
         bool isPlayingSnapshot = false;
+        bool isHighlighted = false;
         #endregion
 
         #region Overrides
@@ -159,34 +168,31 @@ namespace ServoController
         {
             base.OnStart(state);
 
-            //Grab the textures if needed.
-            if (powerOnIcon == null)
-            {
-                string baseIconURL = "WildBlueIndustries/ServoController/Icons/";
-                ConfigNode[] settingsNodes = GameDatabase.Instance.GetConfigNodes("ServoController");
-                if (settingsNodes != null && settingsNodes.Length > 0)
-                    baseIconURL = settingsNodes[0].GetValue("iconsFolder");
-                powerOnIcon = GameDatabase.Instance.GetTexture(baseIconURL + "PowerOn", false);
-                powerOffIcon = GameDatabase.Instance.GetTexture(baseIconURL + "PowerOff", false);
-            }
-
             servoType = (BGServoTypes)Enum.Parse(typeof(BGServoTypes), type);
             switch (servoType)
             {
                 case BGServoTypes.hinge:
                     hingeServo = this.part.FindModuleImplementing<ModuleRoboticServoHinge>();
+                    if (hingeServo != null)
+                        servo = hingeServo;
                     break;
 
                 case BGServoTypes.piston:
                     pistonServo = this.part.FindModuleImplementing<ModuleRoboticServoPiston>();
+                    if (pistonServo != null)
+                        servo = pistonServo;
                     break;
 
                 case BGServoTypes.rotor:
                     rotorServo = this.part.FindModuleImplementing<ModuleRoboticServoRotor>();
+                    if (rotorServo != null)
+                        servo = rotorServo;
                     break;
 
                 case BGServoTypes.servo:
                     rotationServo = this.part.FindModuleImplementing<ModuleRoboticRotationServo>();
+                    if (rotationServo != null)
+                        servo = rotationServo;
                     break;
             }
         }
@@ -196,34 +202,9 @@ namespace ServoController
             base.OnUpdate();
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
-            if (!isPlayingSnapshot)
-                return;
 
-            BaseServo servo = null;
-            switch (servoType)
-            {
-                case BGServoTypes.hinge:
-                    if (Mathf.Abs(hingeServo.currentAngle) / Mathf.Abs(hingeServo.targetAngle) <= 0.01f)
-                        SetServoLock(true);
-                    isPlayingSnapshot = !hingeServo.servoIsLocked;
-                    break;
-
-                case BGServoTypes.piston:
-                    if (Mathf.Abs(pistonServo.currentExtension) / Mathf.Abs(pistonServo.targetExtension) <= 0.01f)
-                        SetServoLock(true);
-                    isPlayingSnapshot = !pistonServo.servoIsLocked;
-                    break;
-
-                case BGServoTypes.rotor:
-                    servo = rotorServo;
-                    break;
-
-                case BGServoTypes.servo:
-                    if (Mathf.Abs(rotationServo.currentAngle) / Mathf.Abs(rotationServo.targetAngle) <= 0.01f)
-                        SetServoLock(true);
-                    isPlayingSnapshot = !rotationServo.servoIsLocked;
-                    break;
-            }
+            checkAutolockAfterPlaying();
+            resetLockedTargetAngle();
         }
 
         #endregion
@@ -280,28 +261,23 @@ namespace ServoController
                 }
             }
         }
+        public void SetAutolock(bool autoLockOn)
+        {
+            autoLock = autoLockOn;
+        }
+
+        public bool IsJointUnlocked()
+        {
+            if (servo == null)
+                return false;
+
+            return servo.IsJointUnlocked();
+        }
 
         public void SetServoLock(bool isLocked)
         {
-            BaseServo servo = null;
-            switch (servoType)
-            {
-                case BGServoTypes.hinge:
-                    servo = hingeServo;
-                    break;
-
-                case BGServoTypes.piston:
-                    servo = pistonServo;
-                    break;
-
-                case BGServoTypes.rotor:
-                    servo = rotorServo;
-                    break;
-
-                case BGServoTypes.servo:
-                    servo = rotationServo;
-                    break;
-            }
+            if (servo == null)
+                return;
 
             if (isLocked && !servo.servoIsLocked)
                 servo.EngageServoLock();
@@ -311,25 +287,8 @@ namespace ServoController
 
         public void ReturnHome()
         {
-            BaseServo servo = null;
-            switch (servoType)
-            {
-                case BGServoTypes.hinge:
-                    servo = hingeServo;
-                    break;
-
-                case BGServoTypes.piston:
-                    servo = pistonServo;
-                    break;
-
-                case BGServoTypes.rotor:
-                    servo = rotorServo;
-                    break;
-
-                case BGServoTypes.servo:
-                    servo = rotationServo;
-                    break;
-            }
+            if (servo == null)
+                return;
         }
 
         public int GetPanelHeight()
@@ -353,7 +312,31 @@ namespace ServoController
 
             GUILayout.BeginScrollView(scrollVector, panelOptions);
 
+            GUILayout.BeginHorizontal();
+            //Name
             GUILayout.Label("<b><color=white>" + partNickName + "</color></b>");
+
+            // Status icons
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                if (IsJointUnlocked())
+                    GUILayout.Label(WBIServoGUI.unlockIcon, iconOptions);
+                else
+                    GUILayout.Label(WBIServoGUI.lockIcon, iconOptions);
+            }
+            //Highlight
+            if (isHighlighted && GUILayout.Button(WBIServoGUI.lightOnIcon, iconOptions))
+            {
+                isHighlighted = false;
+                this.part.Highlight(false);
+            }
+            else if (!isHighlighted && GUILayout.Button(WBIServoGUI.lightOffIcon, iconOptions))
+            {
+                isHighlighted = true;
+                this.part.Highlight(Highlighter.colorPartEditorActionHighlight);
+            }
+
+            GUILayout.EndHorizontal();
 
             switch (servoType)
             {
@@ -404,6 +387,82 @@ namespace ServoController
                     break;
             }
             return node;
+        }
+
+        protected void resetLockedTargetAngle()
+        {
+            if (IsJointUnlocked())
+                return;
+
+            switch (servoType)
+            {
+                case BGServoTypes.hinge:
+                    if (Mathf.Abs(hingeServo.targetAngle) != 0)
+                    {
+                        float targetRatio = Mathf.Abs(hingeServo.currentAngle) / Mathf.Abs(hingeServo.targetAngle);
+                        if (targetRatio < 0.9999f || targetRatio > 1.0001)
+                            hingeServo.targetAngle = hingeServo.currentAngle;
+                    }
+                    break;
+
+                case BGServoTypes.piston:
+                    if (Mathf.Abs(pistonServo.targetExtension) != 0)
+                    {
+                        float targetRatio = Mathf.Abs(pistonServo.currentExtension) / Mathf.Abs(pistonServo.targetExtension);
+                        if (targetRatio < 0.9999f || targetRatio > 1.0001)
+                            pistonServo.targetExtension = pistonServo.currentExtension;
+                    }
+                    break;
+
+                case BGServoTypes.rotor:
+                    servo = rotorServo;
+                    break;
+
+                case BGServoTypes.servo:
+                    if (Mathf.Abs(rotationServo.targetAngle) != 0)
+                    {
+                        float targetRatio = Mathf.Abs(rotationServo.currentAngle) / Mathf.Abs(rotationServo.targetAngle);
+                        if (targetRatio < 0.9999f || targetRatio > 1.0001)
+                            rotationServo.targetAngle = rotationServo.currentAngle;
+                    }
+                    break;
+            }
+        }
+
+        protected void checkAutolockAfterPlaying()
+        {
+            if (!isPlayingSnapshot || !autoLock)
+                return;
+
+            switch (servoType)
+            {
+                case BGServoTypes.hinge:
+                    if (Mathf.Abs(hingeServo.currentAngle) / Mathf.Abs(hingeServo.targetAngle) <= 0.1f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = hingeServo.IsJointUnlocked();
+                    break;
+
+                case BGServoTypes.piston:
+                    if (Mathf.Abs(pistonServo.currentExtension) / Mathf.Abs(pistonServo.targetExtension) <= 0.1f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = pistonServo.IsJointUnlocked();
+                    break;
+
+                case BGServoTypes.rotor:
+                    servo = rotorServo;
+                    break;
+
+                case BGServoTypes.servo:
+                    if (Mathf.Abs(rotationServo.currentAngle) / Mathf.Abs(rotationServo.targetAngle) <= 0.1f)
+                        SetServoLock(true);
+                    isPlayingSnapshot = rotationServo.IsJointUnlocked();
+                    break;
+            }
+
+            if (isPlayingSnapshot)
+                this.part.Effect(servoEffectName, 1.0f);
+            else
+                this.part.Effect(servoEffectName, -1.0f);
         }
 
         protected void drawPistonControls()
@@ -482,6 +541,21 @@ namespace ServoController
                 pistonServo.currentExtension = softMinMaxExtension.y;
             }
 
+            //Manual lock buttons
+            if (!autoLock)
+            {
+                if (GUILayout.Button(WBIServoGUI.lockIcon, WBIServoGUI.buttonOptions))
+                {
+                    lockServo = false;
+                    SetServoLock(true);
+                }
+                if (GUILayout.Button(WBIServoGUI.unlockIcon, WBIServoGUI.buttonOptions))
+                {
+                    lockServo = false;
+                    SetServoLock(false);
+                }
+            }
+
             GUILayout.EndHorizontal();
 
             //Specific target position
@@ -511,7 +585,7 @@ namespace ServoController
                 pistonServo.currentExtension = softMinMaxExtension.y;
             }
 
-            if (lockServo)
+            if (lockServo && autoLock && !isPlayingSnapshot && HighLogic.LoadedSceneIsFlight)
                 SetServoLock(true);
 
             GUILayout.EndHorizontal();
@@ -591,18 +665,23 @@ namespace ServoController
         {
             float setAngle;
             float currentAngle = 0;
+            float targetAngle = 0;
             bool lockServo = true;
+            bool soundPlaying = false;
+
             if (hingeServo != null)
             {
                 drawResourceConsumption(hingeServo);
                 currentAngle = hingeServo.currentAngle;
+                targetAngle = hingeServo.targetAngle;
             }
             else if (rotationServo != null)
             {
                 drawResourceConsumption(rotationServo);
                 currentAngle = rotationServo.currentAngle;
+                targetAngle = rotationServo.targetAngle;
             }
-            GUILayout.Label(string.Format("<color=white><b>Current Angle: </b>{0:f2}</color>", currentAngle));
+            GUILayout.Label(string.Format("<color=white><b>Angle (cur/tgt): </b>{0:f2}/{1:f2}</color>", currentAngle, targetAngle));
 
             //Rotation speed
             GUILayout.BeginHorizontal();
@@ -650,7 +729,7 @@ namespace ServoController
             }
 
             ///Rotate down
-            if (GUILayout.RepeatButton(WBIServoGUI.backIcon, WBIServoGUI.buttonOptions))
+            if (GUILayout.RepeatButton(WBIServoGUI.counterClockwiseIcon, WBIServoGUI.buttonOptions))
             {
                 currentAngle -= rotationDegPerSec * TimeWarp.fixedDeltaTime;
                 if (currentAngle < softMinMaxAngles.x)
@@ -670,10 +749,12 @@ namespace ServoController
                     rotationServo.Fields["targetAngle"].SetValue(currentAngle, rotationServo);
                     rotationServo.currentAngle = currentAngle;
                 }
+                this.part.Effect(servoEffectName, 1.0f);
+                soundPlaying = true;
             }
 
             //Rotate up
-            if (GUILayout.RepeatButton(WBIServoGUI.forwardIcon, WBIServoGUI.buttonOptions))
+            if (GUILayout.RepeatButton(WBIServoGUI.clockwiseIcon, WBIServoGUI.buttonOptions))
             {
                 currentAngle += rotationDegPerSec * TimeWarp.fixedDeltaTime;
                 if (currentAngle > softMinMaxAngles.y)
@@ -693,16 +774,34 @@ namespace ServoController
                     rotationServo.Fields["targetAngle"].SetValue(currentAngle, rotationServo);
                     rotationServo.currentAngle = currentAngle;
                 }
+                this.part.Effect(servoEffectName, 1.0f);
+                soundPlaying = true;
             }
 
             //Max rotation
             if (GUILayout.Button(WBIServoGUI.maxIcon, WBIServoGUI.buttonOptions))
             {
                 lockServo = false;
+                SetServoLock(false);
                 if (hingeServo != null)
                     hingeServo.SetMaximumAngle();
                 else if (rotationServo != null)
                     rotationServo.SetMaximumAngle();
+            }
+
+            //Manual lock buttons
+            if (!autoLock)
+            {
+                if (GUILayout.Button(WBIServoGUI.lockIcon, WBIServoGUI.buttonOptions))
+                {
+                    lockServo = false;
+                    SetServoLock(true);
+                }
+                if (GUILayout.Button(WBIServoGUI.unlockIcon, WBIServoGUI.buttonOptions))
+                {
+                    lockServo = false;
+                    SetServoLock(false);
+                }
             }
 
             GUILayout.EndHorizontal();
@@ -731,19 +830,28 @@ namespace ServoController
                 if (hingeServo != null)
                 {
                     lockServo = false;
+                    SetServoLock(false);
                     hingeServo.Fields["targetAngle"].SetValue(setAngle, hingeServo);
                     hingeServo.currentAngle = setAngle;
                 }
                 else if (rotationServo != null)
                 {
                     lockServo = false;
+                    SetServoLock(false);
                     rotationServo.Fields["targetAngle"].SetValue(setAngle, rotationServo);
                     rotationServo.currentAngle = setAngle;
                 }
             }
 
-            if (lockServo)
+            // Lock servo
+            if (lockServo && autoLock && !isPlayingSnapshot && HighLogic.LoadedSceneIsFlight)
+            {
                 SetServoLock(true);
+            }
+
+            // Mute sound
+            if (!soundPlaying && !isPlayingSnapshot && HighLogic.LoadedSceneIsFlight)
+                this.part.Effect(servoEffectName, -1.0f);
 
             GUILayout.EndHorizontal();
         }
