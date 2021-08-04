@@ -69,8 +69,9 @@ C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\UnityEngine.
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\UnityEngine.CrashReportingModule.dll
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\UnityEngine.PerformanceReportingModule.dll
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\UnityEngine.VRModule.dll
-C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csprojAssemblyReference.cache
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csproj.CoreCompileInputs.cache
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.dll
 C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.pdb
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\obj\Debug\ServoController.csprojAssemblyReference.cache
+C:\Projects\KSP\WildBlueIndustries\ServoController\Source\bin\Debug\UnityEngine.SubsystemsModule.dll

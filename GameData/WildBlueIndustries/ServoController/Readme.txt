@@ -8,6 +8,9 @@ Copy the contents of the mod's GameData directory into your GameData folder.
 
 ---REVISION HISORY---
 
+1.2.1
+- Recompiled for KSP 1.12.2.
+
 1.2.0
 - Added sound effects for when you control the servos.
 - Added part highlighter to help you determine which GUI controls which servo.
